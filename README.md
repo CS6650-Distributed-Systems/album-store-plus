@@ -55,15 +55,15 @@ AlbumStore/
 
 ## Key Features
 
-1. **Real-time Album Analytics** - `GET /api/v1/albums/{id}/stats`
+1. **Real-time Album Analytics** - `GET /api/albums/{id}/stats`
    - Returns engagement metrics like view counts, likes/dislikes ratio, and popularity ranking
    - Demonstrates efficient read operations using DynamoDB's fast query capabilities
 
-2. **Advanced Search with Faceted Filtering** - `GET /api/v1/albums/search`
+2. **Advanced Search with Faceted Filtering** - `GET /api/albums/search`
    - Powerful search with multiple filter parameters
    - Showcases DynamoDB's secondary indexes for optimized queries
 
-3. **Batch Album Processing** - `POST /api/v1/albums/batch`
+3. **Batch Album Processing** - `POST /api/albums/batch`
    - Allows multiple album uploads at once
    - Demonstrates event-driven architecture through SNS/SQS
    - Triggers asynchronous image processing via Lambda
@@ -107,16 +107,16 @@ AlbumStore/
 
 ### Command API
 
-- `POST /api/v1/albums` - Create a new album
-- `POST /api/v1/albums/batch` - Create multiple albums
-- `POST /api/v1/review/{like|dislike}/{albumID}` - Like or dislike an album
+- `POST /api/albums` - Create a new album
+- `POST /api/albums/batch` - Create multiple albums
+- `POST /api/review/{like|dislike}/{albumID}` - Like or dislike an album
 
 ### Query API
 
-- `GET /api/v1/albums/{albumID}` - Get album by ID
-- `GET /api/v1/albums/{albumID}/stats` - Get album statistics
-- `GET /api/v1/albums/search` - Search albums with filtering
-- `GET /api/v1/albums/{albumID}/image` - Get album image
+- `GET /api/albums/{albumID}` - Get album by ID
+- `GET /api/albums/{albumID}/stats` - Get album statistics
+- `GET /api/albums/search` - Search albums with filtering
+- `GET /api/albums/{albumID}/image` - Get album image
 
 ## Running Tests
 

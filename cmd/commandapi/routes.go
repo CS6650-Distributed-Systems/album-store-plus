@@ -43,7 +43,7 @@ func (r *Routes) RegisterRoutes(router chi.Router) {
 		router.Get("/health", r.handleHealth)
 
 		// v1 API routes
-		router.Route("/api/v1", func(router chi.Router) {
+		router.Route("/api", func(router chi.Router) {
 			// Album routes
 			router.Route("/albums", func(router chi.Router) {
 				router.Post("/", r.handleCreateAlbum)
