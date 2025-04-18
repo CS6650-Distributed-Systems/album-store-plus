@@ -1,6 +1,6 @@
 // Reference the existing IAM role for the Lambda function
 data "aws_iam_role" "lambda_role" {
-  name = "RoleForLambdaModLabRole"
+  name = var.iam_role_name
 }
 
 // Create a CloudWatch log group for Lambda logs

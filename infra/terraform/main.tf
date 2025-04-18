@@ -21,11 +21,11 @@ provider "aws" {
 
 // Create an AWS Secret Manager secret for the database password
 resource "aws_secretsmanager_secret" "db_password" {
-  name        = "${var.project_name}-db-password"
+  name        = "${var.project_name}-mysql-password"
   description = "Password for the RDS database"
 
   tags = {
-    Name = "${var.project_name}-db-password"
+    Name = "${var.project_name}-mysql-password"
   }
 }
 
