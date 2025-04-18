@@ -1,3 +1,8 @@
+// Reference the existing IAM role for the Lambda function
+data "aws_iam_role" "lambda_role" {
+  name = "RoleForLambdaModLabRole"
+}
+
 // Create a CloudWatch log group for Lambda logs
 resource "aws_cloudwatch_log_group" "lambda_logs" {
   name              = "/aws/lambda/${var.lambda_function_name}"
@@ -11,7 +16,7 @@ resource "aws_cloudwatch_log_group" "lambda_logs" {
 // Create the Lambda function
 resource "aws_lambda_function" "image_processor" {
   function_name    = var.lambda_function_name
-  role             = var.iam_role_name
+  role             = data.aws_iam_role.lambda_role.arn
   handler          = var.lambda_handler
   runtime          = var.lambda_runtime
   filename         = var.lambda_zip_file

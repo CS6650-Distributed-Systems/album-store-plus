@@ -12,6 +12,11 @@ resource "aws_ecs_cluster" "album_store_cluster" {
   }
 }
 
+// Reference the existing ECS task execution role
+data "aws_iam_role" "ecs_service_role" {
+  name = var.iam_role_name
+}
+
 // Create a CloudWatch log group for ECS logs
 resource "aws_cloudwatch_log_group" "ecs_logs" {
   name              = "/ecs/${var.project_name}"
@@ -39,8 +44,8 @@ resource "aws_ecs_task_definition" "album_store_task" {
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.fargate_cpu
   memory                   = var.fargate_memory
-  execution_role_arn       = var.iam_role_name
-  task_role_arn            = var.iam_role_name
+  execution_role_arn       = data.aws_iam_role.ecs_service_role.arn
+  task_role_arn            = data.aws_iam_role.ecs_service_role.arn
 
   container_definitions = jsonencode([
     {
@@ -117,8 +122,8 @@ resource "aws_ecs_task_definition" "worker_task" {
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.worker_fargate_cpu
   memory                   = var.worker_fargate_memory
-  execution_role_arn       = var.iam_role_name
-  task_role_arn            = var.iam_role_name
+  execution_role_arn       = data.aws_iam_role.ecs_service_role.arn
+  task_role_arn            = data.aws_iam_role.ecs_service_role.arn
 
   container_definitions = jsonencode([
     {
