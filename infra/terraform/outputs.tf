@@ -1,74 +1,66 @@
+// Networking outputs
 output "vpc_id" {
-  description = "ID of the VPC"
-  value       = aws_vpc.main.id
+  description = "The ID of the VPC"
+  value       = module.networking.vpc_id
 }
 
-output "public_subnet_ids" {
-  description = "IDs of the public subnets"
-  value       = aws_subnet.public.*.id
+output "alb_dns_name" {
+  description = "The DNS name of the ALB"
+  value       = module.networking.alb_dns_name
 }
 
-output "private_subnet_ids" {
-  description = "IDs of the private subnets"
-  value       = aws_subnet.private.*.id
-}
-
-output "s3_bucket_name" {
-  description = "Name of the S3 bucket for album images"
-  value       = aws_s3_bucket.album_images.bucket
-}
-
-output "s3_bucket_arn" {
-  description = "ARN of the S3 bucket for album images"
-  value       = aws_s3_bucket.album_images.arn
+// Database outputs
+output "rds_endpoint" {
+  description = "Endpoint of the RDS instance"
+  value       = module.database.rds_endpoint
 }
 
 output "dynamodb_table_name" {
-  description = "Name of the DynamoDB table for albums"
-  value       = aws_dynamodb_table.albums.name
+  description = "Name of the DynamoDB table"
+  value       = module.database.dynamodb_table_name
 }
 
-output "dynamodb_table_arn" {
-  description = "ARN of the DynamoDB table for albums"
-  value       = aws_dynamodb_table.albums.arn
+// Storage outputs
+output "album_covers_bucket_name" {
+  description = "Name of the S3 bucket for album covers"
+  value       = module.storage.album_covers_bucket_name
 }
 
-output "rds_endpoint" {
-  description = "Endpoint of the RDS instance"
-  value       = aws_db_instance.main.endpoint
+// Serverless outputs
+output "lambda_function_name" {
+  description = "Name of the Lambda function"
+  value       = module.serverless.lambda_function_name
 }
 
-output "rds_address" {
-  description = "Address of the RDS instance"
-  value       = aws_db_instance.main.address
-}
-
-output "rds_db_name" {
-  description = "Database name of the RDS instance"
-  value       = aws_db_instance.main.db_name
-}
-
+// Messaging outputs
 output "sns_topic_arn" {
-  description = "ARN of the SNS topic for album events"
-  value       = aws_sns_topic.album_events.arn
+  description = "ARN of the SNS topic"
+  value       = module.messaging.sns_topic_arn
 }
 
 output "sqs_queue_url" {
-  description = "URL of the SQS queue for album events"
-  value       = aws_sqs_queue.album_events.id
+  description = "URL of the SQS queue"
+  value       = module.messaging.sqs_queue_url
 }
 
-output "sqs_queue_arn" {
-  description = "ARN of the SQS queue for album events"
-  value       = aws_sqs_queue.album_events.arn
+// Compute outputs
+output "ecs_cluster_name" {
+  description = "Name of the ECS cluster"
+  value       = module.compute.ecs_cluster_name
 }
 
-output "lambda_function_name" {
-  description = "Name of the Lambda function for image processing"
-  value       = aws_lambda_function.image_processor.function_name
+output "ecs_service_name" {
+  description = "Name of the ECS service"
+  value       = module.compute.ecs_service_name
 }
 
-output "lambda_function_arn" {
-  description = "ARN of the Lambda function for image processing"
-  value       = aws_lambda_function.image_processor.arn
+output "worker_service_name" {
+  description = "Name of the worker ECS service"
+  value       = module.compute.worker_service_name
+}
+
+// Application URL
+output "application_url" {
+  description = "URL of the application"
+  value       = "http://${module.networking.alb_dns_name}"
 }

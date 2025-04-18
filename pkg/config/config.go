@@ -1,170 +1,175 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
-	"time"
+	"strconv"
+	"strings"
 )
 
-// Config represents the application configuration
 type Config struct {
 	Environment string         `json:"environment"`
 	Server      ServerConfig   `json:"server"`
-	Database    DatabaseConfig `json:"database"`
-	DynamoDB    DynamoDBConfig `json:"dynamoDB"`
-	S3          S3Config       `json:"s3"`
+	AWS         AWSConfig      `json:"aws"`
+	MySQL       MySQLConfig    `json:"mysql"`
+	DynamoDB    DynamoDBConfig `json:"dynamodb"`
+	S3          S3Config       `json:"storage"`
 	SNS         SNSConfig      `json:"sns"`
 	SQS         SQSConfig      `json:"sqs"`
-	Lambda      LambdaConfig   `json:"lambda"`
-	Logging     LoggingConfig  `json:"logging"`
+	Lambda      LambdaConfig   `json:"serverless"`
+	Features    FeaturesConfig `json:"features"`
 }
 
-// ServerConfig represents the server configuration
+// ServerConfig contains HTTP server settings
 type ServerConfig struct {
-	Host    string        `json:"host"`
-	Port    int           `json:"port"`
-	Timeout time.Duration `json:"timeout"`
+	Port int `json:"port"`
 }
 
-// DatabaseConfig represents the RDS database configuration
-type DatabaseConfig struct {
+// AWSConfig contains AWS general configuration
+type AWSConfig struct {
+	Region string `json:"region"`
+}
+
+// MySQLConfig contains MySQL database configuration
+type MySQLConfig struct {
 	Host     string `json:"host"`
 	Port     string `json:"port"`
 	Username string `json:"username"`
 	Password string `json:"password"`
-	Name     string `json:"name"`
-	MaxOpen  int    `json:"maxOpen"`
-	MaxIdle  int    `json:"maxIdle"`
-	Lifetime int    `json:"lifetime"`
+	Database string `json:"database"`
 }
 
-// DynamoDBConfig represents the DynamoDB configuration
+// DynamoDBConfig contains DynamoDB configuration
 type DynamoDBConfig struct {
-	Region             string `json:"region"`
-	Endpoint           string `json:"endpoint"`
-	TableName          string `json:"tableName"`
-	ReadCapacityUnits  int64  `json:"readCapacityUnits"`
-	WriteCapacityUnits int64  `json:"writeCapacityUnits"`
+	TableName string `json:"tableName"`
 }
 
-// S3Config represents the S3 configuration
+// S3Config contains S3 configuration
 type S3Config struct {
-	Region     string `json:"region"`
-	Endpoint   string `json:"endpoint"`
-	BucketName string `json:"bucketName"`
+	ImagesBucket string `json:"imagesBucket"`
 }
 
-// SNSConfig represents the SNS configuration
+// SNSConfig contains SNS configuration
 type SNSConfig struct {
-	Region   string `json:"region"`
-	Endpoint string `json:"endpoint"`
 	TopicArn string `json:"topicArn"`
 }
 
-// SQSConfig represents the SQS configuration
+// SQSConfig contains SQS configuration
 type SQSConfig struct {
-	Region   string `json:"region"`
-	Endpoint string `json:"endpoint"`
 	QueueUrl string `json:"queueUrl"`
 }
 
-// LambdaConfig represents the Lambda configuration
+// LambdaConfig contains Lambda configuration
 type LambdaConfig struct {
-	Region       string `json:"region"`
-	Endpoint     string `json:"endpoint"`
 	FunctionName string `json:"functionName"`
 }
 
-// LoggingConfig represents the logging configuration
-type LoggingConfig struct {
-	Level      string `json:"level"`
-	Format     string `json:"format"`
-	OutputPath string `json:"outputPath"`
+// FeaturesConfig contains feature flags for experiments
+type FeaturesConfig struct {
+	UseLocalImageProcessing bool `json:"useLocalImageProcessing"`
+	UseDynamoDBForReviews   bool `json:"useDynamoDBForReviews"`
 }
 
-// LoadConfig loads configuration from a JSON file
-func LoadConfig(path string) (*Config, error) {
-	data, err := os.ReadFile(path)
+// getEnv retrieves an environment variable or returns a default value
+func getEnv(key, defaultValue string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value
+}
+
+// getEnvBool retrieves a boolean environment variable or returns a default value
+func getEnvBool(key string, defaultValue bool) bool {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+
+	// Try to parse as boolean
+	lowercaseValue := strings.ToLower(value)
+	if lowercaseValue == "true" || lowercaseValue == "1" || lowercaseValue == "yes" {
+		return true
+	}
+	if lowercaseValue == "false" || lowercaseValue == "0" || lowercaseValue == "no" {
+		return false
+	}
+
+	// If not parsable, return default
+	return defaultValue
+}
+
+// getEnvInt retrieves an integer environment variable or returns a default value
+func getEnvInt(key string, defaultValue int) int {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+
+	intValue, err := strconv.Atoi(value)
 	if err != nil {
-		return nil, fmt.Errorf("error reading config file: %w", err)
+		return defaultValue
 	}
 
-	var config Config
-	if err := json.Unmarshal(data, &config); err != nil {
-		return nil, fmt.Errorf("error parsing config file: %w", err)
-	}
-
-	// Apply environment overrides
-	if err := applyEnvironmentOverrides(&config); err != nil {
-		return nil, fmt.Errorf("error applying environment overrides: %w", err)
-	}
-
-	return &config, nil
+	return intValue
 }
 
-// GetDefaultConfigPath returns the default configuration path
-func GetDefaultConfigPath() string {
-	// First, check the environment variable
-	if path := os.Getenv("CONFIG_FILE"); path != "" {
-		return path
+// LoadConfig loads the application configuration
+func LoadConfig() (*Config, error) {
+	// Create configuration with environment variables or defaults
+	cfg := &Config{
+		Environment: getEnv("APP_ENV", "development"),
+		Server: ServerConfig{
+			Port: getEnvInt("SERVER_PORT", 8080),
+		},
+		AWS: AWSConfig{
+			Region: getEnv("AWS_REGION", "us-west-2"),
+		},
+		MySQL: MySQLConfig{
+			Host:     getEnv("MYSQL_HOST", "localhost"),
+			Port:     getEnv("MYSQL_PORT", "3306"),
+			Username: getEnv("MYSQL_USERNAME", "album_store_user"),
+			Password: getEnv("MYSQL_PASSWORD", "password"),
+			Database: getEnv("MYSQL_DATABASE", "album_store"),
+		},
+		DynamoDB: DynamoDBConfig{
+			TableName: getEnv("DYNAMODB_TABLE_NAME", "album_reviews"),
+		},
+		S3: S3Config{
+			ImagesBucket: getEnv("S3_IMAGES_BUCKET", "album-store-covers"),
+		},
+		SNS: SNSConfig{
+			TopicArn: getEnv("SNS_TOPIC_ARN", "your-topic-arn"),
+		},
+		SQS: SQSConfig{
+			QueueUrl: getEnv("SQS_QUEUE_URL", "your-queue-url"),
+		},
+		Lambda: LambdaConfig{
+			FunctionName: getEnv("LAMBDA_FUNCTION_NAME", "album-image-processor"),
+		},
+		Features: FeaturesConfig{
+			UseLocalImageProcessing: getEnvBool("FEATURE_USE_LOCAL_IMAGE_PROCESSING", false),
+			UseDynamoDBForReviews:   getEnvBool("FEATURE_USE_DYNAMODB_FOR_REVIEWS", true),
+		},
 	}
 
-	// Next, check if configs/config.json exists in the current directory
-	if _, err := os.Stat("configs/config.json"); err == nil {
-		return "configs/config.json"
-	}
-
-	// Try parent directory
-	if _, err := os.Stat("../configs/config.json"); err == nil {
-		return "../configs/config.json"
-	}
-
-	// Default to "configs/config.json" if no config file is found
-	return "configs/config.json"
+	return cfg, nil
 }
 
-// applyEnvironmentOverrides applies environment variable overrides to config
-func applyEnvironmentOverrides(config *Config) error {
-	// Override environment if set
-	if env := os.Getenv("ENVIRONMENT"); env != "" {
-		config.Environment = env
-	}
-
-	// Database overrides
-	if host := os.Getenv("DB_HOST"); host != "" {
-		config.Database.Host = host
-	}
-	if port := os.Getenv("DB_PORT"); port != "" {
-		config.Database.Port = port
-	}
-	if user := os.Getenv("DB_USERNAME"); user != "" {
-		config.Database.Username = user
-	}
-	if pass := os.Getenv("DB_PASSWORD"); pass != "" {
-		config.Database.Password = pass
-	}
-	if name := os.Getenv("DB_NAME"); name != "" {
-		config.Database.Name = name
-	}
-
-	// AWS overrides
-	if region := os.Getenv("AWS_REGION"); region != "" {
-		config.DynamoDB.Region = region
-		config.S3.Region = region
-		config.SNS.Region = region
-		config.SQS.Region = region
-		config.Lambda.Region = region
-	}
-
-	// Endpoint overrides for local development
-	if endpoint := os.Getenv("AWS_ENDPOINT"); endpoint != "" {
-		config.DynamoDB.Endpoint = endpoint
-		config.S3.Endpoint = endpoint
-		config.SNS.Endpoint = endpoint
-		config.SQS.Endpoint = endpoint
-		config.Lambda.Endpoint = endpoint
-	}
-
-	return nil
+// PrintConfig print the current configuration for development
+func (c *Config) PrintConfig() {
+	fmt.Println("=== Application Configuration ===")
+	fmt.Println("Environment:", c.Environment)
+	fmt.Println("Server Port:", c.Server.Port)
+	fmt.Println("AWS Region:", c.AWS.Region)
+	fmt.Println("MySQL:", c.MySQL.Host, c.MySQL.Port, c.MySQL.Database)
+	fmt.Println("DynamoDB Table:", c.DynamoDB.TableName)
+	fmt.Println("S3 Bucket:", c.S3.ImagesBucket)
+	fmt.Println("SNS Topic ARN:", c.SNS.TopicArn)
+	fmt.Println("SQS Queue URL:", c.SQS.QueueUrl)
+	fmt.Println("Lambda Function:", c.Lambda.FunctionName)
+	fmt.Println("Feature Flags:")
+	fmt.Println("  - Use Local Image Processing:", c.Features.UseLocalImageProcessing)
+	fmt.Println("  - Use DynamoDB for Reviews:", c.Features.UseDynamoDBForReviews)
+	fmt.Println("===============================")
 }
