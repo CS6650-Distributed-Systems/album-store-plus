@@ -17,6 +17,12 @@ variable "aws_region" {
   default     = "us-west-2"
 }
 
+variable "iam_role_name" {
+  description = "Name of the IAM role to use for Lambda and ECS tasks"
+  type        = string
+  default     = "LabRole"
+}
+
 // Networking
 variable "vpc_cidr" {
   description = "CIDR block for the VPC"
@@ -159,7 +165,7 @@ variable "lambda_runtime" {
 variable "lambda_zip_file" {
   description = "Path to the Lambda function zip file"
   type        = string
-  default     = "../infra/lambda/process_image/nodejs/function.zip"
+  default     = "../lambda/process_image/nodejs/function.zip"
 }
 
 variable "lambda_memory_size" {

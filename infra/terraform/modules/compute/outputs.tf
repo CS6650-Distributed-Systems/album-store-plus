@@ -23,16 +23,6 @@ output "ecs_task_definition_arn" {
   value       = aws_ecs_task_definition.album_store_task.arn
 }
 
-output "ecs_task_role_arn" {
-  description = "ARN of the ECS task role"
-  value       = data.aws_iam_role.ecs_service_role.arn
-}
-
-output "ecs_task_execution_role_arn" {
-  description = "ARN of the ECS task execution role"
-  value       = data.aws_iam_role.ecs_service_role.arn
-}
-
 output "cloudwatch_log_group_name" {
   description = "Name of the CloudWatch log group for ECS logs"
   value       = aws_cloudwatch_log_group.ecs_logs.name

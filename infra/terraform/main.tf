@@ -73,6 +73,7 @@ module "serverless" {
   source = "./modules/serverless"
 
   project_name       = var.project_name
+  iam_role_name      = var.iam_role_name
   lambda_function_name = var.lambda_function_name
   lambda_handler     = var.lambda_handler
   lambda_runtime     = var.lambda_runtime
@@ -100,6 +101,7 @@ module "compute" {
   project_name           = var.project_name
   environment            = var.environment
   aws_region             = var.aws_region
+  iam_role_name          = var.iam_role_name
   app_port               = var.app_port
   app_count              = var.app_count
   worker_count           = var.worker_count

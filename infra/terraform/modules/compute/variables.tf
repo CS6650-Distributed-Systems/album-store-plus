@@ -14,6 +14,11 @@ variable "aws_region" {
   type        = string
 }
 
+variable "iam_role_name" {
+  description = "Name of the IAM role to use for ECS tasks"
+  type        = string
+}
+
 variable "app_port" {
   description = "Port on which the application runs"
   type        = number

@@ -4,8 +4,8 @@ const sharp = require('sharp');
 const stream = require('stream');
 
 // Configuration values matching the Go implementation
-const maxWidth = 800;
-const maxHeight = 800;
+const maxWidth = 100;
+const maxHeight = 100;
 const quality = 85;
 
 // Create S3 client

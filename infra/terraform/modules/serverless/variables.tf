@@ -3,6 +3,11 @@ variable "project_name" {
   type        = string
 }
 
+variable "iam_role_name" {
+  description = "Name of the IAM role to use for Lambda functions"
+  type        = string
+}
+
 variable "lambda_function_name" {
   description = "Name of the Lambda function"
   type        = string
@@ -46,13 +51,13 @@ variable "s3_bucket_name" {
 variable "max_image_width" {
   description = "Maximum width for processed images"
   type        = number
-  default     = 800
+  default     = 100
 }
 
 variable "max_image_height" {
   description = "Maximum height for processed images"
   type        = number
-  default     = 800
+  default     = 100
 }
 
 variable "image_quality" {
