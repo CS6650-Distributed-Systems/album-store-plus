@@ -26,6 +26,16 @@ output "album_covers_bucket_name" {
   value       = module.storage.album_covers_bucket_name
 }
 
+output "app_repository_url" {
+  description = "URL of the ECR repository for the main application"
+  value       = module.storage.app_repository_url
+}
+
+output "worker_repository_url" {
+  description = "URL of the ECR repository for the worker"
+  value       = module.storage.worker_repository_url
+}
+
 // Serverless outputs
 output "lambda_function_name" {
   description = "Name of the Lambda function"

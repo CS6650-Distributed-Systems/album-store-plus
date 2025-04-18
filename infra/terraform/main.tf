@@ -107,8 +107,8 @@ module "compute" {
   worker_fargate_cpu     = var.worker_fargate_cpu
   fargate_memory         = var.fargate_memory
   worker_fargate_memory  = var.worker_fargate_memory
-  container_image        = var.container_image
-  worker_container_image = var.worker_container_image
+  container_image        = module.storage.app_repository_url
+  worker_container_image = module.storage.worker_repository_url
   ecs_security_group_id  = module.networking.ecs_sg_id
   private_subnet_ids     = module.networking.private_subnets
   alb_target_group_arn   = module.networking.alb_target_group_arn

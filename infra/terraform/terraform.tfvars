@@ -15,12 +15,10 @@ app_count = 2
 // ECS Fargate
 fargate_cpu    = 1024
 fargate_memory = 2048
-container_image = "725520385716.dkr.ecr.us-west-2.amazonaws.com/album-store-plus:latest"
 // Worker
 worker_count = 2
 worker_fargate_cpu = 512
 worker_fargate_memory = 1024
-worker_container_image = "725520385716.dkr.ecr.us-west-2.amazonaws.com/album-store-worker:latest"
 
 // Database - RDS
 db_instance_class     = "db.t4g.micro"

@@ -74,17 +74,17 @@ variable "worker_fargate_memory" {
   default     = 1024
 }
 
-variable "container_image" {
-  description = "Docker image for the container"
-  type        = string
-  default     = "album-store-plus:latest"
-}
+# variable "container_image" {
+#   description = "Docker image for the container"
+#   type        = string
+#   default     = "album-store-plus:latest"
+# }
 
-variable "worker_container_image" {
-  description = "Docker image for the worker container"
-  type        = string
-  default     = "album-store-worker:latest"
-}
+# variable "worker_container_image" {
+#   description = "Docker image for the worker container"
+#   type        = string
+#   default     = "album-store-worker:latest"
+# }
 
 // Database - RDS
 variable "db_instance_class" {

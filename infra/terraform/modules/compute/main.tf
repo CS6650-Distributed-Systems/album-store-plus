@@ -48,7 +48,7 @@ resource "aws_ecs_task_definition" "album_store_task" {
   container_definitions = jsonencode([
     {
       name      = "${var.project_name}-container"
-      image     = var.container_image
+      image     = "${var.container_image}:latest"
       essential = true
 
       portMappings = [
@@ -124,18 +124,15 @@ resource "aws_ecs_task_definition" "worker_task" {
   container_definitions = jsonencode([
     {
       name      = "${var.project_name}-worker-container"
-      image     = var.worker_container_image
+      image     = "${var.worker_container_image}:latest"
       essential = true
 
       environment = [
         { name = "ENVIRONMENT", value = var.environment },
-
         # DynamoDB config
         { name = "DYNAMODB_TABLE_NAME", value = var.dynamodb_table_name },
-
         # SQS config
         { name = "SQS_QUEUE_URL", value = var.sqs_queue_url },
-
         # AWS Region
         { name = "AWS_REGION", value = var.aws_region }
       ]

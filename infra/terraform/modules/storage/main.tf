@@ -66,3 +66,71 @@ resource "aws_s3_bucket_cors_configuration" "album_covers_cors" {
     max_age_seconds = 3000
   }
 }
+
+// Create ECR repository for the main application
+resource "aws_ecr_repository" "app_repository" {
+  name                 = var.app_repository_name
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = {
+    Name = "${var.project_name}-app-ecr"
+  }
+}
+
+// Create ECR repository for the worker
+resource "aws_ecr_repository" "worker_repository" {
+  name                 = var.worker_repository_name
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = {
+    Name = "${var.project_name}-worker-ecr"
+  }
+}
+
+// Create a lifecycle policy for the app repository
+resource "aws_ecr_lifecycle_policy" "app_lifecycle_policy" {
+  repository = aws_ecr_repository.app_repository.name
+
+  policy = jsonencode({
+    rules = [{
+      rulePriority = 1
+      description  = "Keep last 5 images"
+      selection = {
+        tagStatus     = "any"
+        countType     = "imageCountMoreThan"
+        countNumber   = 5
+      }
+      action = {
+        type = "expire"
+      }
+    }]
+  })
+}
+
+// Create a lifecycle policy for the worker repository
+resource "aws_ecr_lifecycle_policy" "worker_lifecycle_policy" {
+  repository = aws_ecr_repository.worker_repository.name
+
+  policy = jsonencode({
+    rules = [{
+      rulePriority = 1
+      description  = "Keep last 5 images"
+      selection = {
+        tagStatus     = "any"
+        countType     = "imageCountMoreThan"
+        countNumber   = 5
+      }
+      action = {
+        type = "expire"
+      }
+    }]
+  })
+}
