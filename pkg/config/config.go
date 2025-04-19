@@ -1,7 +1,7 @@
 package config
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -158,18 +158,18 @@ func LoadConfig() (*Config, error) {
 
 // PrintConfig print the current configuration for development
 func (c *Config) PrintConfig() {
-	fmt.Println("=== Application Configuration ===")
-	fmt.Println("Environment:", c.Environment)
-	fmt.Println("Server Port:", c.Server.Port)
-	fmt.Println("AWS Region:", c.AWS.Region)
-	fmt.Println("MySQL:", c.MySQL.Host, c.MySQL.Port, c.MySQL.Database)
-	fmt.Println("DynamoDB Table:", c.DynamoDB.TableName)
-	fmt.Println("S3 Bucket:", c.S3.ImagesBucket)
-	fmt.Println("SNS Topic ARN:", c.SNS.TopicArn)
-	fmt.Println("SQS Queue URL:", c.SQS.QueueUrl)
-	fmt.Println("Lambda Function:", c.Lambda.FunctionName)
-	fmt.Println("Feature Flags:")
-	fmt.Println("  - Use Local Image Processing:", c.Features.UseLocalImageProcessing)
-	fmt.Println("  - Use DynamoDB for Reviews:", c.Features.UseDynamoDBForReviews)
-	fmt.Println("===============================")
+	log.Println("=== Application Configuration ===")
+	log.Println("Environment:", c.Environment)
+	log.Println("Server Port:", c.Server.Port)
+	log.Println("AWS Region:", c.AWS.Region)
+	log.Println("MySQL:", c.MySQL.Host, c.MySQL.Port, c.MySQL.Database)
+	log.Println("DynamoDB Table:", c.DynamoDB.TableName)
+	log.Println("S3 Bucket:", c.S3.ImagesBucket)
+	log.Println("SNS Topic ARN:", c.SNS.TopicArn)
+	log.Println("SQS Queue URL:", c.SQS.QueueUrl)
+	log.Println("Lambda Function:", c.Lambda.FunctionName)
+	log.Println("Feature Flags:")
+	log.Println("  - Use Local Image Processing:", c.Features.UseLocalImageProcessing)
+	log.Println("  - Use DynamoDB for Reviews:", c.Features.UseDynamoDBForReviews)
+	log.Println("===============================")
 }

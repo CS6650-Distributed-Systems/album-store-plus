@@ -90,9 +90,8 @@ resource "aws_ecs_task_definition" "album_store_task" {
         { name = "AWS_REGION", value = var.aws_region },
 
         # Feature flags
-        { name = "USE_LOCAL_IMAGE_PROCESSING", value = "false" },
-        { name = "USE_DYNAMODB_FOR_REVIEWS", value = "true" },
-        { name = "ENABLE_MESSAGE_PROCESSOR", value = "true" }
+        { name = "FEATURE_USE_LOCAL_IMAGE_PROCESSING", value = "false" },
+        { name = "FEATURE_USE_DYNAMODB_FOR_REVIEWS", value = "true" },
       ]
 
       secrets = [
