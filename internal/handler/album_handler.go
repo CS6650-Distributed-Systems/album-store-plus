@@ -3,7 +3,10 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"mime/multipart"
 	"net/http"
+	"strings"
 
 	"github.com/CS6650-Distributed-Systems/album-store-plus/internal/domain"
 	"github.com/CS6650-Distributed-Systems/album-store-plus/internal/service"
@@ -69,17 +72,72 @@ func (h *AlbumHandler) GetAlbumsByArtist(w http.ResponseWriter, r *http.Request)
 
 // CreateAlbum handles POST requests to create an album
 func (h *AlbumHandler) CreateAlbum(w http.ResponseWriter, r *http.Request) {
+	// First, check if this is a multipart form request (with image)
+	isMultipart := strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data")
+
 	var album domain.Album
-	if err := json.NewDecoder(r.Body).Decode(&album); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
+
+	var file multipart.File
+	var fileHeader *multipart.FileHeader
+	var err error
+
+	if isMultipart {
+		// Parse multipart form with 10MB limit
+		r.Body = http.MaxBytesReader(w, r.Body, 10<<20)
+		if err := r.ParseMultipartForm(10 << 20); err != nil {
+			http.Error(w, "File too large", http.StatusBadRequest)
+			return
+		}
+
+		// Get album data from form field
+		albumData := r.FormValue("album")
+		if albumData == "" {
+			http.Error(w, "Missing album data", http.StatusBadRequest)
+			return
+		}
+
+		// Parse album JSON
+		if err := json.Unmarshal([]byte(albumData), &album); err != nil {
+			http.Error(w, "Invalid album data format", http.StatusBadRequest)
+			return
+		}
+
+		// Get image file
+		file, fileHeader, err = r.FormFile("image")
+		if err != nil {
+			http.Error(w, "Error retrieving file", http.StatusBadRequest)
+			return
+		}
+		defer file.Close()
+	} else {
+		// Regular JSON request without image
+		if err := json.NewDecoder(r.Body).Decode(&album); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
 	}
 
+	// Create the album
 	if err := h.service.CreateAlbum(r.Context(), &album); err != nil {
 		http.Error(w, fmt.Sprintf("Error creating album: %v", err), http.StatusInternalServerError)
 		return
 	}
 
+	// Process image if it was uploaded
+	if isMultipart && file != nil {
+		if err := h.service.UploadAlbumCover(r.Context(), album.ID, file, fileHeader.Filename); err != nil {
+			// Don't fail the whole request if image upload fails
+			log.Printf("Error uploading cover for new album %s: %v", album.ID, err)
+		}
+
+		// Refresh album to get updated image info
+		updatedAlbum, err := h.service.GetAlbum(r.Context(), album.ID, false, false)
+		if err == nil && updatedAlbum != nil {
+			album = *updatedAlbum
+		}
+	}
+
+	// Return the created album
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(album); err != nil {

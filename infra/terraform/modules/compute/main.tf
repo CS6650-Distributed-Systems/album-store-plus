@@ -203,3 +203,23 @@ resource "aws_ecs_service" "worker_service" {
     Name = "${var.project_name}-worker-service"
   }
 }
+
+//
+resource "aws_iam_role_policy" "secrets_manager_policy" {
+  name = "${var.project_name}-secrets-manager-policy"
+  role = data.aws_iam_role.ecs_service_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ]
+        Effect   = "Allow"
+        Resource = var.db_password_arn
+      }
+    ]
+  })
+}
