@@ -41,7 +41,6 @@ module "database" {
   db_name               = var.db_name
   db_username           = var.db_username
   db_password           = var.db_password
-  db_multi_az           = var.db_multi_az
   dynamodb_table_name   = var.dynamodb_table_name
 }
 
@@ -107,6 +106,6 @@ module "compute" {
   rds_endpoint           = module.database.rds_endpoint
   rds_port               = module.database.rds_port
   rds_username           = module.database.rds_username
-  rds_password           = module.database.rdb_password
+  rds_password           = module.database.rds_password
   rds_database_name      = module.database.rds_database_name
 }

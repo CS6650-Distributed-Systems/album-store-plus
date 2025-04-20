@@ -135,8 +135,3 @@ variable "rds_database_name" {
   description = "Name of the database"
   type        = string
 }
-
-variable "db_password_arn" {
-  description = "ARN of the secret containing the database password"
-  type        = string
-}
