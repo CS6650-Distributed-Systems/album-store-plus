@@ -43,12 +43,6 @@ variable "db_password" {
   sensitive   = true
 }
 
-variable "db_multi_az" {
-  description = "Whether to enable Multi-AZ for the RDS instance"
-  type        = bool
-  default     = false
-}
-
 variable "dynamodb_table_name" {
   description = "Name of the DynamoDB table for album reviews"
   type        = string

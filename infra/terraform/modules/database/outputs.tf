@@ -13,6 +13,11 @@ output "rds_username" {
   value       = aws_db_instance.album_store_mysql.username
 }
 
+output "rds_password" {
+  description = "Password for the RDS instance"
+  value       = aws_db_instance.album_store_mysql.password
+}
+
 output "rds_database_name" {
   description = "Name of the database"
   value       = aws_db_instance.album_store_mysql.db_name

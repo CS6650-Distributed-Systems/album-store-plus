@@ -69,6 +69,7 @@ resource "aws_ecs_task_definition" "album_store_task" {
         { name = "MYSQL_HOST", value = var.rds_endpoint },
         { name = "MYSQL_PORT", value = var.rds_port },
         { name = "MYSQL_USERNAME", value = var.rds_username },
+        { name = "MYSQL_PASSWORD", value = var.rds_password },
         { name = "MYSQL_DATABASE", value = var.rds_database_name },
 
         # DynamoDB config
@@ -92,10 +93,6 @@ resource "aws_ecs_task_definition" "album_store_task" {
         # Feature flags
         { name = "FEATURE_USE_LOCAL_IMAGE_PROCESSING", value = "false" },
         { name = "FEATURE_USE_DYNAMODB_FOR_REVIEWS", value = "true" },
-      ]
-
-      secrets = [
-        { name = "MYSQL_PASSWORD", valueFrom = var.db_password_arn }
       ]
 
       logConfiguration = {
@@ -202,24 +199,4 @@ resource "aws_ecs_service" "worker_service" {
   tags = {
     Name = "${var.project_name}-worker-service"
   }
-}
-
-//
-resource "aws_iam_role_policy" "secrets_manager_policy" {
-  name = "${var.project_name}-secrets-manager-policy"
-  role = data.aws_iam_role.ecs_service_role.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = [
-          "secretsmanager:GetSecretValue",
-          "secretsmanager:DescribeSecret"
-        ]
-        Effect   = "Allow"
-        Resource = var.db_password_arn
-      }
-    ]
-  })
 }

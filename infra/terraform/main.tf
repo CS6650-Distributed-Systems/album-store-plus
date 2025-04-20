@@ -19,21 +19,6 @@ provider "aws" {
   region = var.aws_region
 }
 
-// Create an AWS Secret Manager secret for the database password
-resource "aws_secretsmanager_secret" "db_password" {
-  name        = "${var.project_name}-mysql-password"
-  description = "Password for the RDS database"
-
-  tags = {
-    Name = "${var.project_name}-mysql-password"
-  }
-}
-
-resource "aws_secretsmanager_secret_version" "db_password" {
-  secret_id     = aws_secretsmanager_secret.db_password.id
-  secret_string = var.db_password
-}
-
 // Networking module
 module "networking" {
   source = "./modules/networking"
@@ -122,6 +107,6 @@ module "compute" {
   rds_endpoint           = module.database.rds_endpoint
   rds_port               = module.database.rds_port
   rds_username           = module.database.rds_username
+  rds_password           = module.database.rdb_password
   rds_database_name      = module.database.rds_database_name
-  db_password_arn        = aws_secretsmanager_secret.db_password.arn
 }

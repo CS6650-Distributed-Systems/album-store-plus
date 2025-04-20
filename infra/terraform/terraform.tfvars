@@ -25,8 +25,6 @@ db_instance_class     = "db.t4g.micro"
 db_allocated_storage  = 20
 db_name               = "album_store"
 db_username           = "album_store_user"
-// WARNING: Never commit actual passwords to version control!
-// Instead, use environment variables or a secure secret management tool
 db_password           = "CS6650_GetRichTeam"
 db_multi_az           = false
 
