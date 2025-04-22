@@ -173,8 +173,21 @@ func (s *Service) UploadAlbumCover(ctx context.Context, albumID string, imageDat
 	ext := filepath.Ext(filename)
 	originalKey := "albums/" + albumID + "/original/" + uuid.New().String() + ext
 
+	// Read the entire file into memory to determine size
+	imageBytes, err := io.ReadAll(imageData)
+	if err != nil {
+		return err
+	}
+
+	contentLength := int64(len(imageBytes))
+
 	// Upload the original image
-	if err := s.storageRepo.UploadObject(ctx, originalKey, imageData, "image/"+ext[1:]); err != nil {
+	if err := s.storageRepo.UploadObject(
+		ctx,
+		originalKey,
+		imageData,
+		"image/"+ext[1:],
+		contentLength); err != nil {
 		return err
 	}
 

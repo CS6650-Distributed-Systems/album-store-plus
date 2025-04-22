@@ -8,7 +8,7 @@ import (
 // Repository defines operations for object storage
 type Repository interface {
 	// UploadObject uploads an object to storage
-	UploadObject(ctx context.Context, key string, data io.Reader, contentType string) error
+	UploadObject(ctx context.Context, key string, data io.Reader, contentType string, contentLength int64) error
 
 	// DownloadObject downloads an object from storage
 	DownloadObject(ctx context.Context, key string) (io.ReadCloser, error)

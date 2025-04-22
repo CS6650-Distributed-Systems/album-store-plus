@@ -27,12 +27,13 @@ func NewRepository(client *s3.Client, bucketName, region string) *Repository {
 }
 
 // UploadObject uploads an object to S3
-func (r *Repository) UploadObject(ctx context.Context, key string, data io.Reader, contentType string) error {
+func (r *Repository) UploadObject(ctx context.Context, key string, data io.Reader, contentType string, contentLength int64) error {
 	_, err := r.client.PutObject(ctx, &s3.PutObjectInput{
-		Bucket:      aws.String(r.bucketName),
-		Key:         aws.String(key),
-		Body:        data,
-		ContentType: aws.String(contentType),
+		Bucket:        aws.String(r.bucketName),
+		Key:           aws.String(key),
+		Body:          data,
+		ContentType:   aws.String(contentType),
+		ContentLength: aws.Int64(contentLength),
 	})
 	return err
 }

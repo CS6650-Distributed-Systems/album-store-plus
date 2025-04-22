@@ -1,13 +1,13 @@
 package image
 
 import (
+	"bytes"
 	"context"
 	"github.com/CS6650-Distributed-Systems/album-store-plus/internal/storage"
 	"github.com/nfnt/resize"
 	"image"
 	"image/jpeg"
 	_ "image/png" // Register PNG decoder
-	"io"
 )
 
 // LocalService implements ImageService with local processing
@@ -47,21 +47,23 @@ func (s *LocalService) ProcessImage(ctx context.Context, originalKey, processedK
 	resized := resize.Thumbnail(s.maxWidth, s.maxHeight, img, resize.Lanczos3)
 
 	// Create a buffer to store the processed image
-	pr, pw := io.Pipe()
+	var buf bytes.Buffer
+	err = jpeg.Encode(&buf, resized, &jpeg.Options{Quality: s.quality})
+	if err != nil {
+		return err
+	}
 
-	// Write the processed image in a goroutine
-	go func() {
-		defer pw.Close()
-		err := jpeg.Encode(pw, resized, &jpeg.Options{Quality: s.quality})
-		if err != nil {
-			// We can't return the error directly from the goroutine
-			// In a production app, you'd want to use a channel to communicate this error
-			pw.CloseWithError(err)
-		}
-	}()
+	// Get the size of the processed image
+	processedSize := int64(buf.Len())
 
 	// Upload the processed image
-	err = s.storageRepo.UploadObject(ctx, processedKey, pr, "image/jpeg")
+	err = s.storageRepo.UploadObject(
+		ctx,
+		processedKey,
+		bytes.NewReader(buf.Bytes()),
+		"image/jpeg",
+		processedSize,
+	)
 	if err != nil {
 		return err
 	}
