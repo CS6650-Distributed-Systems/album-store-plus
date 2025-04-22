@@ -7,7 +7,9 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/CS6650-Distributed-Systems/album-store-plus/internal/domain"
 	dynamoRepo "github.com/CS6650-Distributed-Systems/album-store-plus/internal/repository/dynamodb"
+	mysqlRepo "github.com/CS6650-Distributed-Systems/album-store-plus/internal/repository/mysql"
 	reviewSvc "github.com/CS6650-Distributed-Systems/album-store-plus/internal/service/review"
 	"github.com/CS6650-Distributed-Systems/album-store-plus/pkg/config"
 
@@ -39,21 +41,39 @@ func main() {
 	dynamoDBClient := dynamodb.NewFromConfig(awsCfg)
 	sqsClient := sqs.NewFromConfig(awsCfg)
 
-	// Initialize DynamoDB table
-	dynamoDB := &dynamoRepo.Database{
-		Client:    dynamoDBClient,
-		TableName: cfg.DynamoDB.TableName,
-	}
-	if err := dynamoDB.EnsureTableExists(ctx); err != nil {
-		log.Fatalf("Failed to ensure DynamoDB table exists: %v", err)
+	// Variable to hold the repository implementation
+	var reviewRepo domain.ReviewRepository
+
+	// Choose between MySQL and DynamoDB based on feature flag
+	if cfg.Features.UseDynamoDBForReviews {
+		// Initialize DynamoDB table
+		dynamoDB := &dynamoRepo.Database{
+			Client:    dynamoDBClient,
+			TableName: cfg.DynamoDB.TableName,
+		}
+		if err := dynamoDB.EnsureTableExists(ctx); err != nil {
+			log.Fatalf("Failed to ensure DynamoDB table exists: %v", err)
+		}
+
+		// Initialize DynamoDB repository
+		reviewRepo = dynamoRepo.NewReviewRepository(dynamoDBClient, cfg.DynamoDB.TableName)
+		log.Println("Using DynamoDB for review storage")
+	} else {
+		// Initialize MySQL database connection
+		mysqlDB, err := mysqlRepo.Connect(cfg.MySQL)
+		if err != nil {
+			log.Fatalf("Failed to connect to MySQL: %v", err)
+		}
+		defer mysqlDB.Close()
+
+		// Initialize MySQL repository
+		reviewRepo = mysqlRepo.NewReviewRepository(mysqlDB.DB)
+		log.Println("Using MySQL for review storage")
 	}
 
-	// Initialize repositories
-	dynamoDBReviewRepo := dynamoRepo.NewReviewRepository(dynamoDBClient, cfg.DynamoDB.TableName)
-
-	// Initialize message processor
+	// Initialize message processor with the chosen repository
 	processor := reviewSvc.NewMessageProcessor(
-		dynamoDBReviewRepo,
+		reviewRepo,
 		sqsClient,
 		cfg.SQS.QueueUrl,
 	)
