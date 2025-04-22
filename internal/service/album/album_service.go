@@ -1,6 +1,7 @@
 package album
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"io"
@@ -185,7 +186,7 @@ func (s *Service) UploadAlbumCover(ctx context.Context, albumID string, imageDat
 	if err := s.storageRepo.UploadObject(
 		ctx,
 		originalKey,
-		imageData,
+		bytes.NewReader(imageBytes),
 		"image/"+ext[1:],
 		contentLength); err != nil {
 		return err
