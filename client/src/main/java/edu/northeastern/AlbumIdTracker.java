@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * It's designed to support concurrent operations without explicit synchronization.
  */
 public class AlbumIdTracker {
-  private static final ConcurrentHashMap<Integer, Long> createdAlbumIds = new ConcurrentHashMap<>();
+  private static final ConcurrentHashMap<Integer, String> createdAlbumIds = new ConcurrentHashMap<>();
   private static final AtomicInteger counter = new AtomicInteger(0);
 
   /**
@@ -20,7 +20,7 @@ public class AlbumIdTracker {
    *
    * @param id The album ID to add to the collection
    */
-  public static void addAlbumId(long id) {
+  public static void addAlbumId(String id) {
     createdAlbumIds.put(counter.getAndIncrement(), id);
   }
 
@@ -31,9 +31,9 @@ public class AlbumIdTracker {
    *
    * @return A randomly selected album ID, or 0 if none exists
    */
-  public static long getRandomAlbumId() {
+  public static String getRandomAlbumId() {
     if (createdAlbumIds.isEmpty()) {
-      return 0;
+      return "00000000-0000-0000-0000-000000000000";
     }
 
     int size = createdAlbumIds.size();
@@ -48,7 +48,7 @@ public class AlbumIdTracker {
    *
    * @return The concurrent map of all tracked album IDs
    */
-  public static ConcurrentHashMap<Integer, Long> getCreatedAlbumIds() {
+  public static ConcurrentHashMap<Integer, String> getCreatedAlbumIds() {
     return createdAlbumIds;
   }
 }

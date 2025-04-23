@@ -103,9 +103,8 @@ public class AlbumStoreClient implements AutoCloseable {
           String responseBody = EntityUtils.toString(response.getEntity());
           try {
             JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);
-            if (jsonResponse.has("albumID")) {
-              long albumId = Long.parseLong(
-                  jsonResponse.get("albumID").getAsString());
+            if (jsonResponse.has("id")) {
+              String albumId = jsonResponse.get("id").getAsString();
               AlbumIdTracker.addAlbumId(albumId);
             }
           } catch (Exception e) {
@@ -137,7 +136,7 @@ public class AlbumStoreClient implements AutoCloseable {
    */
   public CompletableFuture<RequestMetrics> getAlbumAsync() {
     return CompletableFuture.supplyAsync(() -> {
-      long albumId = AlbumIdTracker.getRandomAlbumId();
+      String albumId = AlbumIdTracker.getRandomAlbumId();
       HttpGet get = new HttpGet(baseUrl + "/albums/" + albumId);
 
       // Record start time just before executing the request
@@ -176,7 +175,7 @@ public class AlbumStoreClient implements AutoCloseable {
         throw new IllegalArgumentException("Review type must be 'like' or 'dislike'");
       }
 
-      long albumId = AlbumIdTracker.getRandomAlbumId();
+      String albumId = AlbumIdTracker.getRandomAlbumId();
       HttpPost post = new HttpPost(baseUrl + "/albums/" + albumId + "/" + reviewType);
 
       // Record start time just before executing the request
@@ -208,7 +207,7 @@ public class AlbumStoreClient implements AutoCloseable {
    *         including start time, request type, latency, and response status
    */
   public RequestMetrics getAlbumReviews() {
-    long albumId = AlbumIdTracker.getRandomAlbumId();
+    String albumId = AlbumIdTracker.getRandomAlbumId();
     HttpGet get = new HttpGet(baseUrl + "/albums/" + albumId + "/review");
 
     // Record start time just before executing the request
