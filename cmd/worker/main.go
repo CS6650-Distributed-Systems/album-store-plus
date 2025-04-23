@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/CS6650-Distributed-Systems/album-store-plus/internal/domain"
@@ -17,6 +18,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 )
+
+// Get number of worker threads from config
 
 func main() {
 	// Create background context
@@ -71,24 +74,49 @@ func main() {
 		log.Println("Using MySQL for review storage")
 	}
 
-	// Initialize message processor with the chosen repository
-	processor := reviewSvc.NewMessageProcessor(
-		reviewRepo,
-		sqsClient,
-		cfg.SQS.QueueUrl,
-	)
+	// Create a wait group to track all processors
+	var wg sync.WaitGroup
 
-	// Start the processor
-	log.Println("Starting review message processor...")
-	processor.Start(ctx)
-	log.Println("Review message processor started")
+	// Get worker thread count from config (default to 10 if not set)
+	numWorkerThreads := cfg.Worker.NumThreads
+
+	// Create multiple message processors
+	processors := make([]*reviewSvc.MessageProcessor, numWorkerThreads)
+
+	log.Printf("Starting %d review message processors...\n", numWorkerThreads)
+
+	// Initialize and start each processor
+	for i := 0; i < numWorkerThreads; i++ {
+		processors[i] = reviewSvc.NewMessageProcessor(
+			reviewRepo,
+			sqsClient,
+			cfg.SQS.QueueUrl,
+		)
+
+		// Start each processor
+		wg.Add(1)
+		go func(idx int) {
+			defer wg.Done()
+			log.Printf("Starting processor #%d\n", idx+1)
+			processors[idx].Start(ctx)
+		}(i)
+	}
+
+	log.Printf("%d review message processors started\n", numWorkerThreads)
 
 	// Set up graceful shutdown
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("Shutting down worker...")
-	processor.Stop()
-	log.Println("Worker shutdown complete")
+	log.Println("Shutting down workers...")
+
+	// Stop all processors
+	for i := 0; i < numWorkerThreads; i++ {
+		processors[i].Stop()
+	}
+
+	// Wait for all processors to complete shutdown
+	wg.Wait()
+	log.Println("All workers shutdown complete")
 }

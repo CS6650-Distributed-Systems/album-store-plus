@@ -18,6 +18,12 @@ type Config struct {
 	SQS         SQSConfig      `json:"sqs"`
 	Lambda      LambdaConfig   `json:"serverless"`
 	Features    FeaturesConfig `json:"features"`
+	Worker      WorkerConfig   `json:"worker"`
+}
+
+// WorkerConfig contains configuration for worker processes
+type WorkerConfig struct {
+	NumThreads int `json:"numThreads"`
 }
 
 // ServerConfig contains HTTP server settings
@@ -151,6 +157,9 @@ func LoadConfig() (*Config, error) {
 			UseLocalImageProcessing: getEnvBool("FEATURE_USE_LOCAL_IMAGE_PROCESSING", false),
 			UseDynamoDBForReviews:   getEnvBool("FEATURE_USE_DYNAMODB_FOR_REVIEWS", true),
 		},
+		Worker: WorkerConfig{
+			NumThreads: getEnvInt("WORKER_THREADS", 10), // Default to 10 worker threads
+		},
 	}
 
 	return cfg, nil
@@ -171,5 +180,6 @@ func (c *Config) PrintConfig() {
 	log.Println("Feature Flags:")
 	log.Println("  - Use Local Image Processing:", c.Features.UseLocalImageProcessing)
 	log.Println("  - Use DynamoDB for Reviews:", c.Features.UseDynamoDBForReviews)
+	log.Println("Worker Threads:", c.Worker.NumThreads)
 	log.Println("===============================")
 }
