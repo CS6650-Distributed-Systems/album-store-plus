@@ -1,4 +1,4 @@
-const { S3Client, GetObjectCommand, PutObjectCommand } = require('@aws-sdk/client-storage');
+const { S3Client, GetObjectCommand, PutObjectCommand } = require('@aws-sdk/client-s3');
 const { v4: uuidv4 } = require('uuid');
 const sharp = require('sharp');
 const stream = require('stream');
@@ -65,10 +65,17 @@ exports.handler = async (event) => {
         // Extract request parameters
         const { sourceKey, destinationKey } = event;
 
+        if (!sourceKey || typeof sourceKey !== 'string') {
+            throw new Error('Invalid or missing sourceKey parameter');
+        }
+        if (!destinationKey || typeof destinationKey !== 'string') {
+            throw new Error('Invalid or missing destinationKey parameter');
+        }
+
         // Get bucket name from environment variable
-        const bucketName = process.env.S3_BUCKET_NAME;
+        const bucketName = process.env.S3_BUCKET;
         if (!bucketName) {
-            throw new Error('S3_BUCKET_NAME environment variable not set');
+            throw new Error('S3_BUCKET environment variable not set');
         }
 
         // Process the image
