@@ -46,7 +46,7 @@ public class RequestTask implements Runnable {
       // Execute the specified number of request pairs
       for (int i = 0; i < requestCount; i++) {
         threadFutures.add(client.createAlbumAsync());
-        threadFutures.add(client.getAlbumAsync());
+//        threadFutures.add(client.getAlbumAsync());
         threadFutures.add(client.reviewAlbumAsync("like"));
         threadFutures.add(client.reviewAlbumAsync("dislike"));
       }

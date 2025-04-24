@@ -211,16 +211,20 @@ func (h *AlbumHandler) UploadAlbumCover(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Return the album with updated image info
-	album, err := h.service.GetAlbum(r.Context(), albumID, false, false)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error retrieving updated album: %v", err), http.StatusInternalServerError)
+	// Process and upload the image asynchronously
+	if err := h.service.UploadAlbumCover(r.Context(), albumID, file, fileHeader.Filename); err != nil {
+		http.Error(w, fmt.Sprintf("Error uploading cover: %v", err), http.StatusInternalServerError)
 		return
 	}
 
+	// Return success without waiting for processing to complete
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(album)
+	w.WriteHeader(http.StatusAccepted) // 202 Accepted is more appropriate for async operations
+	json.NewEncoder(w).Encode(map[string]string{
+		"message":  "Image upload initiated",
+		"status":   "processing",
+		"album_id": albumID,
+	})
 }
 
 // GetAlbumCover handles GET requests for an album cover

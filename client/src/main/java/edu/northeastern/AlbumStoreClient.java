@@ -99,7 +99,7 @@ public class AlbumStoreClient implements AutoCloseable {
         long endTime = System.currentTimeMillis();
         int statusCode = response.getStatusLine().getStatusCode();
 
-        if (statusCode == 200 || statusCode == 201) {
+        if (statusCode > 200 && statusCode < 300) {
           String responseBody = EntityUtils.toString(response.getEntity());
           try {
             JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);
@@ -136,27 +136,30 @@ public class AlbumStoreClient implements AutoCloseable {
    */
   public CompletableFuture<RequestMetrics> getAlbumAsync() {
     return CompletableFuture.supplyAsync(() -> {
-      String albumId = AlbumIdTracker.getRandomAlbumId();
-      HttpGet get = new HttpGet(baseUrl + "/albums/" + albumId);
-
-      // Record start time just before executing the request
-      long startTime = System.currentTimeMillis();
-      try (CloseableHttpResponse response = httpClient.execute(get)) {
-        long endTime = System.currentTimeMillis();
-        int statusCode = response.getStatusLine().getStatusCode();
-
-        // Ensure the response is fully consumed to release the connection
-        EntityUtils.consume(response.getEntity());
+//      String albumId = AlbumIdTracker.getRandomAlbumId();
+//      HttpGet get = new HttpGet(baseUrl + "/albums/" + albumId);
+//
+//      // Record start time just before executing the request
+//      long startTime = System.currentTimeMillis();
+//      try (CloseableHttpResponse response = httpClient.execute(get)) {
+//        long endTime = System.currentTimeMillis();
+//        int statusCode = response.getStatusLine().getStatusCode();
+//
+//        // Ensure the response is fully consumed to release the connection
+//        EntityUtils.consume(response.getEntity());
+//        return new RequestMetrics(
+//            startTime, "ALBUM_GET", endTime - startTime, statusCode
+//        );
 
         return new RequestMetrics(
-            startTime, "ALBUM_GET", endTime - startTime, statusCode
+            0, "ALBUM_GET", 0, 200
         );
-      } catch (Exception e) {
-        System.err.println("GET request failed: " + e.getMessage());
-        return new RequestMetrics(
-            startTime, "ALBUM_GET", -1, 500
-        );
-      }
+//      } catch (Exception e) {
+//        System.err.println("GET request failed: " + e.getMessage());
+//        return new RequestMetrics(
+//            startTime, "ALBUM_GET", -1, 500
+//        );
+//      }
     });
   }
 

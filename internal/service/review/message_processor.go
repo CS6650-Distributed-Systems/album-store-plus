@@ -35,7 +35,7 @@ func NewMessageProcessor(repo domain.ReviewRepository, sqsClient *sqs.Client, qu
 		sqsClient:       sqsClient,
 		queueURL:        queueURL,
 		maxMessages:     10,
-		waitTimeSeconds: 20,
+		waitTimeSeconds: 5,
 		stopChan:        make(chan struct{}),
 	}
 }

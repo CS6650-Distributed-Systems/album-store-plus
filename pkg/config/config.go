@@ -132,23 +132,23 @@ func LoadConfig() (*Config, error) {
 			Region: getEnv("AWS_REGION", "us-west-2"),
 		},
 		MySQL: MySQLConfig{
-			Host:     getEnv("MYSQL_HOST", "localhost"),
+			Host:     getEnv("MYSQL_HOST", "album-store-mysql.c5artn9ja50d.us-west-2.rds.amazonaws.com"),
 			Port:     getEnv("MYSQL_PORT", "3306"),
 			Username: getEnv("MYSQL_USERNAME", "album_store_user"),
-			Password: getEnv("MYSQL_PASSWORD", "password"),
+			Password: getEnv("MYSQL_PASSWORD", "CS6650_GetRichTeam"),
 			Database: getEnv("MYSQL_DATABASE", "album_store"),
 		},
 		DynamoDB: DynamoDBConfig{
 			TableName: getEnv("DYNAMODB_TABLE_NAME", "album_reviews"),
 		},
 		S3: S3Config{
-			ImagesBucket: getEnv("S3_IMAGES_BUCKET", "album-store-covers"),
+			ImagesBucket: getEnv("S3_IMAGES_BUCKET", "cs6650-album-store-plus-covers-2"),
 		},
 		SNS: SNSConfig{
-			TopicArn: getEnv("SNS_TOPIC_ARN", "your-topic-arn"),
+			TopicArn: getEnv("SNS_TOPIC_ARN", "arn:aws:sns:us-west-2:937579248286:album-store-album-reviews"),
 		},
 		SQS: SQSConfig{
-			QueueUrl: getEnv("SQS_QUEUE_URL", "your-queue-url"),
+			QueueUrl: getEnv("SQS_QUEUE_URL", "https://sqs.us-west-2.amazonaws.com/937579248286/album-store-album-reviews"),
 		},
 		Lambda: LambdaConfig{
 			FunctionName: getEnv("LAMBDA_FUNCTION_NAME", "album-image-processor"),
@@ -158,7 +158,7 @@ func LoadConfig() (*Config, error) {
 			UseDynamoDBForReviews:   getEnvBool("FEATURE_USE_DYNAMODB_FOR_REVIEWS", true),
 		},
 		Worker: WorkerConfig{
-			NumThreads: getEnvInt("WORKER_THREADS", 10), // Default to 10 worker threads
+			NumThreads: getEnvInt("WORKER_THREADS", 10),
 		},
 	}
 

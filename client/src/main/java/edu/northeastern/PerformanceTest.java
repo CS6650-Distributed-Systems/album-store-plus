@@ -119,7 +119,7 @@ public class PerformanceTest {
       logger.writeMetricsToFile(completedMetrics);
 
       // Calculate total expected requests
-      int totalRequests = threadGroupSize * numThreadGroups * TEST_REQUESTS * 4;
+      int totalRequests = threadGroupSize * numThreadGroups * TEST_REQUESTS * 3;
       long queryReviewTotalRequests = queryMetrics.size();
 
       displayResults(wallTime, totalRequests, runMetrics);
@@ -196,7 +196,8 @@ public class PerformanceTest {
         .collect(Collectors.groupingBy(RequestMetrics::getRequestType));
 
     // Display all performance metrics
-    System.out.println("\nPerformance Test Results");
+    System.out.println("=======================");
+    System.out.println("Performance Test Results");
     System.out.println("=======================");
 
     // Display basic metrics
@@ -248,7 +249,9 @@ public class PerformanceTest {
     double throughput = (double) successfulRequests / (wallTime / 1000.0);
 
     // Display all performance metrics
-    System.out.println("\nQuery Review Results");
+    System.out.println("\n\n\n\n");
+    System.out.println("=======================");
+    System.out.println("Query Review Results");
     System.out.println("=======================");
 
     // Display basic metrics

@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"time"
 
 	"github.com/CS6650-Distributed-Systems/album-store-plus/internal/storage"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
+	"github.com/aws/aws-sdk-go-v2/service/lambda/types"
 )
 
 // ProcessRequest represents the request payload for the image processing Lambda
@@ -60,40 +60,19 @@ func (s *LambdaService) ProcessImage(ctx context.Context, originalKey, processed
 		return err
 	}
 
-	// Invoke Lambda
-	result, err := s.lambdaClient.Invoke(ctx, &lambda.InvokeInput{
-		FunctionName: &s.functionName,
-		Payload:      payload,
+	// Invoke Lambda asynchronously with InvocationType: Event
+	_, err = s.lambdaClient.Invoke(ctx, &lambda.InvokeInput{
+		FunctionName:   &s.functionName,
+		Payload:        payload,
+		InvocationType: types.InvocationTypeEvent,
 	})
 
 	if err != nil {
 		return err
 	}
 
-	// Check Lambda execution status
-	if result.FunctionError != nil {
-		return errors.New("serverless function error: " + *result.FunctionError)
-	}
-
-	// Parse response
-	var response ProcessResponse
-	if err := json.Unmarshal(result.Payload, &response); err != nil {
-		return err
-	}
-
-	// Check for 10 seconds if the processed image exists
-	for i := 0; i < 10; i++ {
-		exists, err := s.storageRepo.ObjectExists(ctx, processedKey)
-		if err != nil {
-			return err
-		}
-		if exists {
-			return nil
-		}
-		time.Sleep(1 * time.Second)
-	}
-
-	return errors.New("timeout waiting for image processing")
+	// Return immediately without waiting for the image to be processed
+	return nil
 }
 
 // GetStatus checks the status of an image processing task

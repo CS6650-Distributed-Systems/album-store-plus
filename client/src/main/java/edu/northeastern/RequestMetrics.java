@@ -33,7 +33,7 @@ public class RequestMetrics {
   public long getResponseCode() { return responseCode; }
 
   public boolean isSuccessful() {
-    return responseCode == 200 || responseCode == 201;
+    return responseCode == 200 || responseCode == 201 || responseCode == 202;
   }
 
   @Override

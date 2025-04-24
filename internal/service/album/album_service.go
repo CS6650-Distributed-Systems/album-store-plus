@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"log"
 	"path/filepath"
 
 	"github.com/CS6650-Distributed-Systems/album-store-plus/internal/domain"
@@ -173,6 +174,7 @@ func (s *Service) UploadAlbumCover(ctx context.Context, albumID string, imageDat
 	// Generate a unique key for the original image
 	ext := filepath.Ext(filename)
 	originalKey := "albums/" + albumID + "/original/" + uuid.New().String() + ext
+	processedKey := "albums/" + albumID + "/processed/" + uuid.New().String() + ".jpg"
 
 	// Read the entire file into memory to determine size
 	imageBytes, err := io.ReadAll(imageData)
@@ -192,15 +194,30 @@ func (s *Service) UploadAlbumCover(ctx context.Context, albumID string, imageDat
 		return err
 	}
 
-	// Request image processing (this will be handled differently in Lambda vs. local implementations)
-	processedKey := "albums/" + albumID + "/processed/" + uuid.New().String() + ".jpg"
-	if err := s.imageProcessor.ProcessImage(ctx, originalKey, processedKey); err != nil {
-		// If processing fails, still keep the original but log the error
+	// Update album with only the original image key first
+	if err := s.albumRepo.UpdateImageKeys(ctx, albumID, originalKey, ""); err != nil {
 		return err
 	}
 
-	// Update album with the new image keys
-	return s.albumRepo.UpdateImageKeys(ctx, albumID, originalKey, processedKey)
+	// Request asynchronous image processing
+	go func() {
+		// Create a new context since the request context will be closed
+		asyncCtx := context.Background()
+
+		// Process image asynchronously
+		if err := s.imageProcessor.ProcessImage(asyncCtx, originalKey, processedKey); err != nil {
+			// Log error but continue since this is async
+			log.Printf("Error processing image for album %s: %v", albumID, err)
+			return
+		}
+
+		// Update the album with the processed image key once it's available
+		// This could be improved with additional status tracking
+		s.albumRepo.UpdateImageKeys(asyncCtx, albumID, originalKey, processedKey)
+	}()
+
+	// Return immediately
+	return nil
 }
 
 // GetAlbumCoverURL gets the URL for an album's processed cover image
